@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { BarChart2, TrendingUp, Users, AlertCircle } from 'lucide-react';
 import { statePaths } from '@/svgData';
+import PieChartComponent from '@/components/universal/Charts';
 
 const StateMap = ({ data }) => {
   const [tooltip, setTooltip] = useState({ visible: false, content: '', x: 0, y: 0 });
@@ -123,6 +124,9 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Metrics Overview */}
+
+        
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <MetricCard
             title="Total Posts"
@@ -148,6 +152,9 @@ export default function Dashboard() {
             icon={AlertCircle}
           />
         </div>
+
+        {/* PIE-CHART ANALYICS */}
+        <PieChartComponent />
 
         {/* Map and Analytics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
