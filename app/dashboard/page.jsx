@@ -5,13 +5,22 @@ import { BarChart2, TrendingUp, Users, AlertCircle } from 'lucide-react';
 import { statePaths } from '@/svgData';
 import PieChartComponent from '@/components/universal/Charts';
 
+// colors to use for map to match p
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#FF6699'];
+
+// map function
 const StateMap = ({ data }) => {
   const [tooltip, setTooltip] = useState({ visible: false, content: '', x: 0, y: 0 });
 
-  const getColor = (value) => {
+  const getColor = (value, index) => {
     const maxValue = Math.max(...Object.values(data));
-    const intensity = value ? (value / maxValue) * 0.8 : 0;
-    return `rgba(80, 24, 196, ${intensity + 0.1})`;
+    const intensity = value ? (value / maxValue) : 0; 
+
+    const r = 255; 
+    const g = Math.floor(255 * (1 - intensity)); 
+    const b = 0;
+
+    return `rgb(${r}, ${g}, ${b})`; 
   };
 
   const handleMouseEnter = (e, state) => {
@@ -33,11 +42,11 @@ const StateMap = ({ data }) => {
         <h2 className="text-xl font-bold text-white mb-4">Engagement Distribution</h2>
         <div className="relative">
           <svg viewBox="0 0 612 696" className="w-full h-full">
-            {Object.entries(statePaths).map(([state, path]) => (
+            {Object.entries(statePaths).map(([state, path], index) => (
               <path
                 key={state}
                 d={path}
-                fill={getColor(data[state])}
+                fill={getColor(data[state], index)}
                 stroke="rgb(55, 65, 81)"
                 strokeWidth="0.5"
                 onMouseEnter={(e) => handleMouseEnter(e, state)}
@@ -49,7 +58,6 @@ const StateMap = ({ data }) => {
           {tooltip.visible && (
             <p
               className="absolute z-10 bottom-0 right-0 bg-gray-900 text-white px-3 py-1 rounded-lg text-sm min-w-fit"
-              // style={{ left: tooltip.x, top: tooltip.y }}
             >
               {tooltip.content}
             </p>
@@ -123,9 +131,6 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Metrics Overview */}
-
-        
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <MetricCard
@@ -157,10 +162,26 @@ export default function Dashboard() {
         <PieChartComponent />
 
         {/* Map and Analytics */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <StateMap data={stateData} />
+        {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6"> */}
+        <div className="flex items-center justify-center w-full">
+          {/* map component */}
+          <div className="w-full max-w-3xl">
+            <StateMap data={stateData} />
+          </div>
+
           <div className="space-y-6">
-            {/* Additional analytics components can go here */}
+
+            {/* <h3 className="text-lg font-bold text-white">Color Representation</h3>
+            <ul className="list-disc pl-5 text-gray-400">
+              {Object.entries(stateData)
+                .sort(([, countA], [, countB]) => countB - countA)
+                .map(([state, count], index) => (
+                  <li key={state} className="flex items-center">
+                    <span className="w-4 h-4 mr-2" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
+                    {`${state}: ${count} posts`}
+                  </li>
+                ))}
+            </ul> */}
           </div>
         </div>
       </div>

@@ -9,7 +9,7 @@ const sampleData = postData.posts;
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#FF6699'];
 
 const PieChartComponent = () => {
-  const [selectedType, setSelectedType] = useState(['reel']);
+  const [selectedType, setSelectedType] = useState(['reel','carousel','static']);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const getClusteredData = (key) => {
