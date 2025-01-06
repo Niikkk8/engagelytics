@@ -4,6 +4,10 @@ import React, { useState } from 'react';
 import { BarChart2, TrendingUp, Users, AlertCircle } from 'lucide-react';
 import { statePaths } from '@/svgData';
 import PieChartComponent from '@/components/universal/Charts';
+import AccordionComponent from '@/components/universal/AccordionComponent';
+// import TableauDashboard from '@/components/universal/tableau';
+
+
 
 // colors to use for map to match p
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#FF6699'];
@@ -184,6 +188,11 @@ export default function Dashboard() {
             </ul> */}
           </div>
         </div>
+
+        {/* TABLEAU */}
+        {/* <TableauDashboard /> */}
+        <AccordionComponent />
+
       </div>
     </div>
   );

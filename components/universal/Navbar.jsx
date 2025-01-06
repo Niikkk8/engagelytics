@@ -26,7 +26,7 @@ export default function Navbar() {
                         <Menu className="h-6 w-6" />
                     </button>
 
-                    {/* Desktop navigation */}
+                    {/* Desktop navigation */} 
                     <div className="hidden md:flex items-center space-x-6">
                         <Link href="/dashboard"
                             className="px-4 sm:px-6 py-2 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors">
