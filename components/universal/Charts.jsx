@@ -1,7 +1,7 @@
 "use client";
 
 import { postData } from '@/svgData';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
 
 const sampleData = postData.posts;
@@ -14,8 +14,13 @@ const renderPercentageLabel = ({ value, total }) => {
 };
 
 const PieChartComponent = () => {
-  const [selectedType, setSelectedType] = useState(['reel','carousel','static']);
+  const [selectedType, setSelectedType] = useState(['reel', 'carousel', 'static']);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isBrowser, setIsBrowser] = useState(false);
+
+  useEffect(() => {
+    setIsBrowser(typeof window !== 'undefined');
+  }, []);
 
   const getClusteredData = (key) => {
     const clusteredData = selectedType.map((type) => {
@@ -87,7 +92,7 @@ const PieChartComponent = () => {
                 outerRadius={70}
                 fill="#8884d8"
                 dataKey="value"
-                label={window.innerWidth >= 768 ? renderPercentageLabel : undefined}
+                label={isBrowser && window.innerWidth >= 768 ? renderPercentageLabel : undefined}
                 animationEasing='ease'
               >
                 {getClusteredData(metric).map((entry, index) => (
@@ -95,8 +100,7 @@ const PieChartComponent = () => {
                 ))}
               </Pie>
               <Tooltip />
-              {/* {window.innerWidth >= 768 && <Legend />} */}
-              <Legend layout="vertical"  verticalAlign="middle" wrapperStyle={{ fontSize: '10px' }} />
+              <Legend layout="vertical" verticalAlign="middle" wrapperStyle={{ fontSize: '10px' }} />
             </PieChart>
           </div>
         ))}
