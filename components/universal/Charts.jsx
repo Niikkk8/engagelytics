@@ -8,6 +8,11 @@ const sampleData = postData.posts;
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#FF6699'];
 
+const renderPercentageLabel = ({ value, total }) => {
+  const percentage = ((value / total) * 100).toFixed(2);
+  return `${percentage}%`;
+};
+
 const PieChartComponent = () => {
   const [selectedType, setSelectedType] = useState(['reel','carousel','static']);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -24,7 +29,12 @@ const PieChartComponent = () => {
       };
     });
 
-    return clusteredData;
+    const total = clusteredData.reduce((acc, data) => acc + data.value, 0);
+
+    return clusteredData.map(data => ({
+      ...data,
+      total,
+    }));
   };
 
   const handleCheckboxChange = (value) => {
@@ -64,9 +74,9 @@ const PieChartComponent = () => {
         </div>
       </div>
 
-      <div className="flex flex-wrap">
+      <div className="flex flex-wrap items-center justify-center ">
         {['likes', 'comments', 'shares', 'reach', 'impressions'].map((metric) => (
-          <div key={metric} className="flex flex-col items-center mb-6 w-1/2 md:w-1/3">
+          <div key={metric} className="flex flex-col items-center mb-6  w-1/2 md:w-1/3  sm:w-1/2 sm:mx-[5vw?">
             <h3 className="text-lg font-semibold text-white mb-2">{metric.charAt(0).toUpperCase() + metric.slice(1)}</h3>
             <PieChart width={300} height={300}>
               <Pie
@@ -77,7 +87,7 @@ const PieChartComponent = () => {
                 outerRadius={70}
                 fill="#8884d8"
                 dataKey="value"
-                label
+                label={window.innerWidth >= 768 ? renderPercentageLabel : undefined}
                 animationEasing='ease'
               >
                 {getClusteredData(metric).map((entry, index) => (
@@ -85,7 +95,8 @@ const PieChartComponent = () => {
                 ))}
               </Pie>
               <Tooltip />
-              <Legend />
+              {/* {window.innerWidth >= 768 && <Legend />} */}
+              <Legend layout="vertical"  verticalAlign="middle" wrapperStyle={{ fontSize: '10px' }} />
             </PieChart>
           </div>
         ))}
