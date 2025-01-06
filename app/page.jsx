@@ -2,12 +2,12 @@ import React from 'react';
 import { Brain, PieChart, Users, Zap, AlertCircle, BarChart2, CodeXml } from 'lucide-react';
 
 const FeatureCard = ({ icon: Icon, title, description }) => (
-  <div className="p-6 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-teal-500/50 transition-all duration-300">
-    <div className="w-12 h-12 rounded-full bg-teal-900/50 flex items-center justify-center mb-4">
-      <Icon className="w-6 h-6 text-teal-400" />
+  <div className="p-4 sm:p-6 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-teal-500/50 transition-all duration-300">
+    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-teal-900/50 flex items-center justify-center mb-4">
+      <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-teal-400" />
     </div>
-    <h3 className="text-xl font-semibold mb-2 text-white">{title}</h3>
-    <p className="text-gray-300">{description}</p>
+    <h3 className="text-lg sm:text-xl font-semibold mb-2 text-white">{title}</h3>
+    <p className="text-sm sm:text-base text-gray-300">{description}</p>
   </div>
 );
 
@@ -38,16 +38,16 @@ export default function Home() {
     <>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-6 py-24 text-center">
-        <div className="inline-flex items-center px-4 py-2 rounded-full bg-teal-900/50 mb-8">
+      <section className="container mx-auto px-4 sm:px-6 py-12 sm:py-24 text-center">
+        <div className="inline-flex items-center px-3 sm:px-4 py-2 rounded-full bg-teal-900/50 mb-6 sm:mb-8">
           <Zap className="w-4 h-4 text-teal-400 mr-2" />
-          <span className="text-sm text-teal-400 font-medium">Hackathon Project 2024</span>
+          <span className="text-xs sm:text-sm text-teal-400 font-medium">Hackathon Project 2024</span>
         </div>
-        <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 sm:mb-6">
           Social Media Analytics
           <span className="block text-teal-400">Powered by AI</span>
         </h1>
-        <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
+        <p className="text-lg sm:text-xl text-gray-300 mb-8 sm:mb-10 max-w-2xl mx-auto px-4">
           Transform your social media data into actionable insights using our AI-powered analytics platform.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">

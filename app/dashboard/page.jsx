@@ -14,13 +14,13 @@ const StateMap = ({ data }) => {
 
   const getColor = (value, index) => {
     const maxValue = Math.max(...Object.values(data));
-    const intensity = value ? (value / maxValue) : 0; 
+    const intensity = value ? (value / maxValue) : 0;
 
-    const r = 255; 
-    const g = Math.floor(255 * (1 - intensity)); 
+    const r = 255;
+    const g = Math.floor(255 * (1 - intensity));
     const b = 0;
 
-    return `rgb(${r}, ${g}, ${b})`; 
+    return `rgb(${r}, ${g}, ${b})`;
   };
 
   const handleMouseEnter = (e, state) => {
@@ -69,20 +69,20 @@ const StateMap = ({ data }) => {
 };
 
 const MetricCard = ({ title, value, icon: Icon, trend }) => (
-  <div className="p-6 bg-gray-800 rounded-xl border border-gray-700">
+  <div className="p-4 sm:p-6 bg-gray-800 rounded-xl border border-gray-700">
     <div className="flex justify-between items-start">
       <div>
-        <p className="text-gray-400 text-sm">{title}</p>
-        <h3 className="text-2xl font-bold text-white mt-1">{value}</h3>
+        <p className="text-gray-400 text-xs sm:text-sm">{title}</p>
+        <h3 className="text-xl sm:text-2xl font-bold text-white mt-1">{value}</h3>
       </div>
       <div className="p-2 bg-gray-700/50 rounded-lg">
-        <Icon className="w-5 h-5 text-teal-500" />
+        <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-teal-500" />
       </div>
     </div>
     {trend && (
-      <div className="flex items-center mt-4">
-        <TrendingUp className="w-4 h-4 text-teal-500 mr-1" />
-        <span className="text-sm text-teal-500">{trend}% increase</span>
+      <div className="flex items-center mt-3 sm:mt-4">
+        <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-teal-500 mr-1" />
+        <span className="text-xs sm:text-sm text-teal-500">{trend}% increase</span>
       </div>
     )}
   </div>
@@ -126,7 +126,7 @@ export default function Dashboard() {
     'IN-LD': 100,  // Lakshadweep
     'IN-PY': 500   // Puducherry
   });
-  
+
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
