@@ -1,78 +1,192 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { BarChart2, TrendingUp, Users, AlertCircle } from 'lucide-react';
-import { statePaths } from '@/svgData';
-import PieChartComponent from '@/components/universal/Charts';
-import AccordionComponent from '@/components/universal/AccordionComponent';
-// import TableauDashboard from '@/components/universal/tableau';
+import PieChartComponent from '@/components/dashboard/Charts';
+import GenderDistribution from '@/components/dashboard/GenderDistribution';
+import StateMap from '@/components/dashboard/StateMap';
+import AccordionComponent from '@/components/dashboard/AccordionComponent';
 
-
-
-// colors to use for map to match p
+// Constants
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#FF6699'];
+const POST_TYPES = ['carousel', 'static', 'reel'];
 
-// map function
-const StateMap = ({ data }) => {
-  const [tooltip, setTooltip] = useState({ visible: false, content: '', x: 0, y: 0 });
+// State codes mapping
+const STATE_CODES = {
+  'Andhra Pradesh': 'AP',
+  'Arunachal Pradesh': 'AR',
+  'Assam': 'AS',
+  'Bihar': 'BR',
+  'Chhattisgarh': 'CT',
+  'Goa': 'GA',
+  'Gujarat': 'GJ',
+  'Haryana': 'HR',
+  'Himachal Pradesh': 'HP',
+  'Jammu and Kashmir': 'JK',
+  'Jharkhand': 'JH',
+  'Karnataka': 'KA',
+  'Kerala': 'KL',
+  'Madhya Pradesh': 'MP',
+  'Maharashtra': 'MH',
+  'Manipur': 'MN',
+  'Meghalaya': 'ML',
+  'Mizoram': 'MZ',
+  'Nagaland': 'NL',
+  'Odisha': 'OR',
+  'Punjab': 'PB',
+  'Rajasthan': 'RJ',
+  'Sikkim': 'SK',
+  'Tamil Nadu': 'TN',
+  'Telangana': 'TG',
+  'Uttar Pradesh': 'UP',
+  'Uttarakhand': 'UT',
+  'West Bengal': 'WB',
+  'Andaman & Nicobar Islands': 'AN',
+  'Chandigarh': 'CH',
+  'Dadra & Nagar Haveli and Daman & Diu': 'DN',
+  'Delhi': 'DL',
+  'Lakshwadeep': 'LD',
+  'Pusucherry': 'PU',
+};
 
-  const getColor = (value, index) => {
-    const maxValue = Math.max(...Object.values(data));
-    const intensity = value ? (value / maxValue) : 0;
+const Dashboard = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    const r = 255;
-    const g = Math.floor(255 * (1 - intensity));
-    const b = 0;
+  useEffect(() => {
+    const fetchAndProcessData = async () => {
+      try {
+        // Fetch data
+        const response = await fetch('data.json');
+        const posts = await response.json();
 
-    return `rgb(${r}, ${g}, ${b})`;
-  };
+        // Process metrics
+        const metrics = processMetrics(posts);
 
-  const handleMouseEnter = (e, state) => {
-    setTooltip({
-      visible: true,
-      content: `${state}: ${data[state] || 0} posts`,
-      x: e.clientX,
-      y: e.clientY
-    });
-  };
+        // Process state data
+        const statePostCounts = processStateData(posts);
 
-  const handleMouseLeave = () => {
-    setTooltip({ ...tooltip, visible: false });
-  };
+        setData({
+          posts,
+          metrics,
+          statePostCounts
+        });
+      } catch (err) {
+        console.error('Error loading data:', err);
+        setError('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAndProcessData();
+  }, []);
+
+  // Memoized data processing functions
+  const processMetrics = useMemo(() => (posts) => {
+    const totalPosts = posts.length;
+
+    // Using reduce once to calculate multiple metrics
+    const { totalLikes, totalComments } = posts.reduce((acc, post) => ({
+      totalLikes: acc.totalLikes + (post.likes || 0),
+      totalComments: acc.totalComments + (post.comments || 0)
+    }), { totalLikes: 0, totalComments: 0 });
+
+    const averageEngagement = ((totalLikes + totalComments) / totalPosts / 100).toFixed(1);
+
+    // Get unique users
+    const uniqueUsers = new Set(posts.map(post => post.gender)).size;
+
+    return {
+      totalPosts,
+      totalLikes,
+      averageEngagement,
+      activeUsers: uniqueUsers
+    };
+  }, []);
+
+  const processStateData = useMemo(() => (posts) => {
+    const statePostCounts = {};
+
+    // Process in chunks for better performance
+    const chunkSize = 1000;
+    for (let i = 0; i < posts.length; i += chunkSize) {
+      const chunk = posts.slice(i, i + chunkSize);
+      chunk.forEach(post => {
+        const stateCode = `IN-${STATE_CODES[post.state] || post.state.substring(0, 2).toUpperCase()}`;
+        statePostCounts[stateCode] = (statePostCounts[stateCode] || 0) + 1;
+      });
+    }
+
+    return statePostCounts;
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-white">Loading dashboard data...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="relative">
-      <div className="p-6 bg-gray-800 rounded-xl border border-gray-700">
-        <h2 className="text-xl font-bold text-white mb-4">Engagement Distribution</h2>
-        <div className="relative">
-          <svg viewBox="0 0 612 696" className="w-full h-full">
-            {Object.entries(statePaths).map(([state, path], index) => (
-              <path
-                key={state}
-                d={path}
-                fill={getColor(data[state], index)}
-                stroke="rgb(55, 65, 81)"
-                strokeWidth="0.5"
-                onMouseEnter={(e) => handleMouseEnter(e, state)}
-                onMouseLeave={handleMouseLeave}
-                className="transition-colors duration-200 hover:opacity-80 cursor-pointer"
-              />
-            ))}
-          </svg>
-          {tooltip.visible && (
-            <p
-              className="absolute z-10 bottom-0 right-0 bg-gray-900 text-white px-3 py-1 rounded-lg text-sm min-w-fit"
-            >
-              {tooltip.content}
-            </p>
-          )}
+    <div className="min-h-screen bg-gray-900 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Metric Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <MetricCard
+            title="Total Posts"
+            value={data.metrics.totalPosts.toLocaleString()}
+            icon={BarChart2}
+            trend="8.2"
+          />
+          <MetricCard
+            title="Active Users"
+            value={data.metrics.activeUsers.toLocaleString()}
+            icon={Users}
+            trend="12.5"
+          />
+          <MetricCard
+            title="Engagement Rate"
+            value={`${data.metrics.averageEngagement}%`}
+            icon={TrendingUp}
+            trend="5.7"
+          />
+          <MetricCard
+            title="Alert Status"
+            value="Normal"
+            icon={AlertCircle}
+          />
         </div>
+
+        {/* Charts */}
+        <PieChartComponent posts={data.posts} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <StateMap data={data.statePostCounts} />
+          </div>
+          <div className="lg:col-span-1">
+            <GenderDistribution posts={data.posts} />
+          </div>
+        </div>
+        <AccordionComponent />
       </div>
     </div>
   );
 };
 
-const MetricCard = ({ title, value, icon: Icon, trend }) => (
+// Metric Card Component
+const MetricCard = React.memo(({ title, value, icon: Icon, trend }) => (
   <div className="p-4 sm:p-6 bg-gray-800 rounded-xl border border-gray-700">
     <div className="flex justify-between items-start">
       <div>
@@ -90,110 +204,6 @@ const MetricCard = ({ title, value, icon: Icon, trend }) => (
       </div>
     )}
   </div>
-);
+));
 
-export default function Dashboard() {
-  const [stateData] = useState({
-    'IN-AP': 1500, // Andhra Pradesh
-    'IN-AR': 200,  // Arunachal Pradesh
-    'IN-AS': 1200, // Assam
-    'IN-BR': 1800, // Bihar
-    'IN-CT': 900,  // Chhattisgarh
-    'IN-GA': 500,  // Goa
-    'IN-GJ': 1300, // Gujarat
-    'IN-HR': 1100, // Haryana
-    'IN-HP': 600,  // Himachal Pradesh
-    'IN-JK': 700,  // Jammu & Kashmir
-    'IN-JH': 1000, // Jharkhand
-    'IN-KA': 1600, // Karnataka
-    'IN-KL': 1400, // Kerala
-    'IN-MP': 2000, // Madhya Pradesh
-    'IN-MH': 2500, // Maharashtra
-    'IN-MN': 300,  // Manipur
-    'IN-ML': 400,  // Meghalaya
-    'IN-MZ': 250,  // Mizoram
-    'IN-NL': 350,  // Nagaland
-    'IN-OR': 1500, // Odisha
-    'IN-PB': 1200, // Punjab
-    'IN-RJ': 1900, // Rajasthan
-    'IN-SK': 150,  // Sikkim
-    'IN-TN': 1700, // Tamil Nadu
-    'IN-TG': 1300, // Telangana
-    'IN-TR': 600,  // Tripura
-    'IN-UP': 3000, // Uttar Pradesh
-    'IN-UT': 400,  // Uttarakhand
-    'IN-WB': 2200, // West Bengal
-    'IN-AN': 250,  // Andaman & Nicobar Islands
-    'IN-CH': 350,  // Chandigarh
-    'IN-DN': 200,  // Dadra & Nagar Haveli and Daman & Diu
-    'IN-DL': 1800, // Delhi
-    'IN-LD': 100,  // Lakshadweep
-    'IN-PY': 500   // Puducherry
-  });
-
-
-  return (
-    <div className="min-h-screen bg-gray-900 p-6">
-      <div className="max-w-7xl mx-auto">
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <MetricCard
-            title="Total Posts"
-            value="12,458"
-            icon={BarChart2}
-            trend="8.2"
-          />
-          <MetricCard
-            title="Active Users"
-            value="2,847"
-            icon={Users}
-            trend="12.5"
-          />
-          <MetricCard
-            title="Engagement Rate"
-            value="24.3%"
-            icon={TrendingUp}
-            trend="5.7"
-          />
-          <MetricCard
-            title="Alert Status"
-            value="Normal"
-            icon={AlertCircle}
-          />
-        </div>
-
-        {/* PIE-CHART ANALYICS */}
-        <PieChartComponent />
-
-        {/* Map and Analytics */}
-        {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6"> */}
-        <div className="flex items-center justify-center w-full">
-          {/* map component */}
-          <div className="w-full max-w-3xl">
-            <StateMap data={stateData} />
-          </div>
-
-          <div className="space-y-6">
-
-            {/* <h3 className="text-lg font-bold text-white">Color Representation</h3>
-            <ul className="list-disc pl-5 text-gray-400">
-              {Object.entries(stateData)
-                .sort(([, countA], [, countB]) => countB - countA)
-                .map(([state, count], index) => (
-                  <li key={state} className="flex items-center">
-                    <span className="w-4 h-4 mr-2" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
-                    {`${state}: ${count} posts`}
-                  </li>
-                ))}
-            </ul> */}
-          </div>
-        </div>
-
-        {/* TABLEAU */}
-        {/* <TableauDashboard /> */}
-        <AccordionComponent />
-
-      </div>
-    </div>
-  );
-}
+export default Dashboard;
