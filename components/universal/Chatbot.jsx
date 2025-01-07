@@ -1,30 +1,64 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Loader } from 'lucide-react';
+import { Send, Loader, MessageCircle } from 'lucide-react';
 
-const ChatMessage = React.memo(({ message }) => (
-    <div
-        className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
-    >
-        <div
-            className={`max-w-[70%] rounded-lg p-3 ${message.type === 'user'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-800'
-                }`}
-        >
-            <p className="break-words">{message.content}</p>
+const formatAnalysisContent = (content) => {
+    if (!content.includes('save-to-like ratio')) return content;
+
+    const formattedContent = content
+        .replace(/\*\*/g, '')
+        .split('\n')
+        .map(line => {
+            if (line.match(/^\d+\.\s(Reel|Carousel|Static|Other)/)) {
+                const [num, rest] = line.split('. ');
+                return `<div class="font-bold text-lg mt-4 mb-2 text-blue-100">${num}. ${rest}</div>`;
+            }
+            if (line.includes('Post ID:')) {
+                const posts = line.trim()
+                    .split(',')
+                    .map(post => {
+                        const [id, ratio] = post.split('(');
+                        return `<span class="inline-block bg-opacity-20 bg-white rounded px-2 py-1 m-1 text-sm">
+                            ${id.replace('Post ID:', 'Post').trim()}: ${ratio?.replace(')', '')}
+                        </span>`;
+                    })
+                    .join('');
+                return `<div class="flex flex-wrap gap-1 mt-1">${posts}</div>`;
+            }
+            return `<div class="mb-2">${line}</div>`;
+        })
+        .join('');
+
+    return formattedContent;
+};
+
+const ChatMessage = React.memo(({ message }) => {
+    const formattedContent = formatAnalysisContent(message.content);
+
+    return (
+        <div className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} mb-4`}>
+            <div
+                className={`max-w-[90%] rounded-lg p-4 ${message.type === 'user'
+                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
+                        : 'bg-gradient-to-r from-gray-800 to-gray-900 text-gray-100 shadow-lg'
+                    }`}
+            >
+                <div
+                    className="break-words"
+                    dangerouslySetInnerHTML={{ __html: formattedContent }}
+                />
+            </div>
         </div>
-    </div>
-));
+    );
+});
 
 ChatMessage.displayName = 'ChatMessage';
 
-export default function Chatbot() {
+const ChatWindow = ({ isOpen, onClose }) => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [isOpen, setIsOpen] = useState(false);
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
 
@@ -48,34 +82,48 @@ export default function Chatbot() {
         if (!input.trim() || isLoading) return;
 
         const userMessage = { type: 'user', content: input };
-        setMessages(prev => [...prev, userMessage]);
+        setMessages((prev) => [...prev, userMessage]);
         setInput('');
         setIsLoading(true);
 
         try {
-            const response = await fetch('/api/chat', {
+            const response = await fetch("/api/chat", {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userMessage: input }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    input_value: input,
+                    tweaks: {
+                        "AstraDBToolComponent-CF8aW": {},
+                        "ParseData-cwkgx": {},
+                        "TextInput-OS4Th": {},
+                        "ChatInput-L0kXb": {},
+                        "CombineText-JYwrG": {},
+                        "GroqModel-7sUX4": {},
+                        "ChatOutput-X19Q2": {}
+                    }
+                }),
             });
 
-
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error("Chat API Error:", errorText);
-                throw new Error('Failed to fetch chat response.');
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
-            const botMessage = {
-                type: 'bot',
-                content: data.outputs[0].artifacts.message || 'I apologize, but I couldn’t process your request.',
-            };
+            const botMessage = data.outputs[0].outputs[0].artifacts.message;
 
-            setMessages(prev => [...prev, botMessage]);
+            if (botMessage) {
+                setMessages((prev) => [...prev, { type: 'bot', content: botMessage }]);
+            } else {
+                setMessages((prev) => [
+                    ...prev,
+                    { type: 'bot', content: "I apologize, but I couldn't process your request." },
+                ]);
+            }
         } catch (error) {
             console.error('Error:', error);
-            setMessages(prev => [
+            setMessages((prev) => [
                 ...prev,
                 { type: 'bot', content: 'An error occurred. Please try again.' },
             ]);
@@ -84,76 +132,77 @@ export default function Chatbot() {
         }
     };
 
-    return (
-        <div className="fixed bottom-0 right-0 mb-4 mr-4 z-50">
-            {!isOpen && (
-                <button
-                    onClick={() => setIsOpen(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all duration-200 ease-in-out"
-                    aria-label="Open chat"
-                >
-                    <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                        />
-                    </svg>
-                </button>
-            )}
+    if (!isOpen) return null;
 
-            {isOpen && (
-                <div className="bg-white rounded-lg shadow-xl w-96 max-w-[calc(100vw-2rem)] flex flex-col border border-gray-200">
-                    <div className="p-4 bg-blue-600 text-white rounded-t-lg flex justify-between items-center">
-                        <h3 className="font-medium">Chat Assistant</h3>
+    return (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-gradient-to-b from-gray-900 to-black rounded-lg shadow-2xl w-[800px] max-w-[90vw] flex flex-col border border-gray-800">
+                <div className="p-4 bg-gradient-to-r from-blue-600 to-blue-800 rounded-t-lg flex justify-between items-center">
+                    <h3 className="font-medium text-white flex items-center gap-2">
+                        <MessageCircle className="w-5 h-5" />
+                        Analysis Assistant
+                    </h3>
+                    <button
+                        onClick={onClose}
+                        className="text-white hover:text-gray-200 transition-colors text-2xl font-light"
+                        aria-label="Close chat"
+                    >
+                        ×
+                    </button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-6 max-h-[600px] min-h-[500px] bg-gradient-to-b from-gray-900 to-black">
+                    {messages.map((message, index) => (
+                        <ChatMessage key={index} message={message} />
+                    ))}
+                    {isLoading && (
+                        <div className="flex justify-center items-center py-2">
+                            <Loader className="w-6 h-6 animate-spin text-blue-500" />
+                        </div>
+                    )}
+                    <div ref={messagesEndRef} />
+                </div>
+                <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-800 bg-gray-900">
+                    <div className="flex gap-2">
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder="Ask about your data analysis..."
+                            className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            disabled={isLoading}
+                        />
                         <button
-                            onClick={() => setIsOpen(false)}
-                            className="text-white hover:text-gray-200 transition-colors"
-                            aria-label="Close chat"
+                            type="submit"
+                            disabled={isLoading || !input.trim()}
+                            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg px-6 hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                            aria-label="Send message"
                         >
-                            ×
+                            <Send className="w-5 h-5" />
                         </button>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-4 max-h-[400px] min-h-[300px] bg-gray-50">
-                        {messages.map((message, index) => (
-                            <ChatMessage key={index} message={message} />
-                        ))}
-                        {isLoading && (
-                            <div className="flex justify-center items-center py-2">
-                                <Loader className="w-6 h-6 animate-spin text-blue-600" />
-                            </div>
-                        )}
-                        <div ref={messagesEndRef} />
-                    </div>
-                    <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200">
-                        <div className="flex gap-2">
-                            <input
-                                ref={inputRef}
-                                type="text"
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                placeholder="Type your message..."
-                                className="flex-1 px-4 py-2 border border-gray-300 rounded-full text-black focus:outline-none focus:border-blue-500"
-                                disabled={isLoading}
-                            />
-                            <button
-                                type="submit"
-                                disabled={isLoading || !input.trim()}
-                                className="bg-blue-600 text-white rounded-full p-2 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                aria-label="Send message"
-                            >
-                                <Send className="w-5 h-5" />
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            )}
+                </form>
+            </div>
         </div>
+    );
+};
+
+export default function Chatbot() {
+    const [isOpen, setIsOpen] = useState(false);
+
+    const handleOpen = () => setIsOpen(true);
+    const handleClose = () => setIsOpen(false);
+
+    return (
+        <>
+            <button
+                onClick={handleOpen}
+                className="fixed bottom-6 right-6 p-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 z-50"
+                aria-label="Open chat"
+            >
+                <MessageCircle className="w-6 h-6" />
+            </button>
+            <ChatWindow isOpen={isOpen} onClose={handleClose} />
+        </>
     );
 }
