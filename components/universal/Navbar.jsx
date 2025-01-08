@@ -32,6 +32,10 @@ export default function Navbar() {
                             className="px-4 sm:px-6 py-2 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors">
                             Dashboard
                         </Link>
+                        <Link href="/tableau"
+                            className="px-4 sm:px-6 py-2 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors">
+                            Tableau
+                        </Link>
                         <Link href="#demo"
                             className="px-4 sm:px-6 py-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors">
                             View Demo
@@ -46,6 +50,10 @@ export default function Navbar() {
                             <Link href="/dashboard"
                                 className="px-4 py-2 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors text-center">
                                 Dashboard
+                            </Link>
+                            <Link href="/tableau"
+                                className="px-4 py-2 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors text-center">
+                                Tableau
                             </Link>
                             <Link href="#demo"
                                 className="px-4 py-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors text-center">

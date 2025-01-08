@@ -40,8 +40,8 @@ const ChatMessage = React.memo(({ message }) => {
         <div className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} mb-4`}>
             <div
                 className={`max-w-[90%] rounded-lg p-4 ${message.type === 'user'
-                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
-                        : 'bg-gradient-to-r from-gray-800 to-gray-900 text-gray-100 shadow-lg'
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
+                    : 'bg-gradient-to-r from-gray-800 to-gray-900 text-gray-100 shadow-lg'
                     }`}
             >
                 <div
@@ -106,26 +106,28 @@ const ChatWindow = ({ isOpen, onClose }) => {
                 }),
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(data.message || `HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
-            const botMessage = data.outputs[0].outputs[0].artifacts.message;
-
-            if (botMessage) {
-                setMessages((prev) => [...prev, { type: 'bot', content: botMessage }]);
+            if (data.outputs?.[0]?.outputs?.[0]?.artifacts?.message) {
+                setMessages((prev) => [...prev, {
+                    type: 'bot',
+                    content: data.outputs[0].outputs[0].artifacts.message
+                }]);
             } else {
-                setMessages((prev) => [
-                    ...prev,
-                    { type: 'bot', content: "I apologize, but I couldn't process your request." },
-                ]);
+                throw new Error('Invalid response format from API');
             }
         } catch (error) {
             console.error('Error:', error);
             setMessages((prev) => [
                 ...prev,
-                { type: 'bot', content: 'An error occurred. Please try again.' },
+                {
+                    type: 'bot',
+                    content: `Error: ${error.message || 'An unexpected error occurred. Please try again.'}`
+                },
             ]);
         } finally {
             setIsLoading(false);

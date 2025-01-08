@@ -2,55 +2,50 @@ import { NextResponse } from "next/server";
 
 export async function POST(request) {
   try {
-    // Parse the request body
-    const { userMessage } = await request.json();
+    const { input_value, tweaks } = await request.json();
 
-    // API URL
-    const url = "https://langflow-api-vslj.onrender.com/query";
+    const url = "https://langflow-api-1.onrender.com";
 
-    // Define the payload
-    const payload = {
-      input_value:
-        userMessage ||
-        "What's the save-to-like ratio across different post types?", // Use default if userMessage is not provided
-      tweaks: {
-        "AstraDBToolComponent-CF8aW": {},
-        "ParseData-cwkgx": {},
-        "TextInput-OS4Th": {},
-        "ChatInput-L0kXb": {},
-        "CombineText-JYwrG": {},
-        "GroqModel-7sUX4": {},
-        "ChatOutput-X19Q2": {},
-      },
-    };
+    console.log("Sending request to:", url);
+    console.log("Request payload:", { input_value, tweaks });
 
-    // Make the POST request
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer AstraCS:qPzaEhMMIdZiHYILkssXxhaC:ab118817d459f9c6d84662f3fd6c7f757cc6108d9c80bb259186fed5a8841f6d`,
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        input_value,
+        tweaks,
+      }),
     });
 
-    // Handle the response
+    console.log("Response status:", response.status);
+
     if (!response.ok) {
-      throw new Error(`Langflow API returned an error: ${response.status}`);
+      const errorText = await response.text();
+      console.error("API Error Response:", errorText);
+      throw new Error(`Langflow API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log("Successful response:", data);
 
-    // Log and return the response
-    console.log("Langflow API Response:", data.outputs[0]); // Adjust this based on your response structure
     return NextResponse.json(data);
   } catch (error) {
-    // Handle and log errors
-    console.error("Error hitting Langflow API:", error.message);
+    console.error("Detailed error:", {
+      message: error.message,
+      stack: error.stack,
+      cause: error.cause,
+    });
 
     return NextResponse.json(
       {
-        error: "Failed to fetch data from Langflow API",
-        details: error.message,
+        error: true,
+        message: error.message,
+        details:
+          process.env.NODE_ENV === "development" ? error.stack : undefined,
       },
       { status: 500 }
     );
