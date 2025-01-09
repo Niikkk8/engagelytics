@@ -55,7 +55,7 @@ export default function Home() {
             View Dashboard
           </Link>
           <Link href={'https://github.com/Niikkk8/engagelytics'} className="px-8 py-3 rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors w-full sm:w-auto font-medium">
-            View Dashboard
+            View Github Repo
           </Link>
           <button className="px-8 py-3 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors w-full sm:w-auto font-medium">
             Watch Demo
