@@ -54,9 +54,9 @@ const GenderDistribution = ({ posts }) => {
     };
 
     return (
-        <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+        <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 h-auto pb-20">
             <h2 className="text-xl font-bold text-white mb-6">Gender Distribution</h2>
-            <div className="">
+            <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <defs>
