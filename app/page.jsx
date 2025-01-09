@@ -1,6 +1,7 @@
 import React from 'react';
 import { Brain, PieChart, Users, Zap, AlertCircle, BarChart2, CodeXml } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const FeatureCard = ({ icon: Icon, title, description }) => (
   <div className="p-4 sm:p-6 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-teal-500/50 transition-all duration-300">
@@ -50,9 +51,9 @@ export default function Home() {
           Transform your social media data into actionable insights using our AI-powered analytics platform.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-          <button className="px-8 py-3 rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors w-full sm:w-auto font-medium">
+          <Link href={'/dashboard'} className="px-8 py-3 rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors w-full sm:w-auto font-medium">
             View Dashboard
-          </button>
+          </Link>
           <button className="px-8 py-3 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors w-full sm:w-auto font-medium">
             Watch Demo
           </button>
