@@ -208,3 +208,5 @@ const AccordionComponent = () => {
     </div>
   )
 }
+
+export default AccordionComponent;
